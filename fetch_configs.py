@@ -1,5 +1,6 @@
 import requests
 import logging
+import re
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,6 +14,10 @@ HEADERS = """//profile-title: base64:YWluaXRhLm5ldA==
 //support-url: info@ainita.net
 //profile-web-page-url: https://ainita.net"""
 
+def clean_config(config):
+    config = re.sub(r'/\?POST%20', '', config)
+    return config
+
 def fetch_config(url, server_number):
     https_url = url.replace('ssconf://', 'https://')
     logger.info(f"Fetching config from: {https_url}")
@@ -22,6 +27,7 @@ def fetch_config(url, server_number):
         response.raise_for_status()
         content = response.text.strip()
         if content.startswith('ss://'):
+            content = clean_config(content)
             content = f"{content}#Server-{server_number}"
             logger.info(f"Successfully fetched config from {https_url} and added server number")
             return content
